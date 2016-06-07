@@ -5,6 +5,10 @@
 import sys, pygame, random, pyganim
 from pygame.locals import * 
 
+import imp
+gamemanager = imp.load_source('gamemanager', 'gamemanager/gamemanager.py')
+menustate = imp.load_source('menustates', 'states/menustate.py')
+
 # Constantes
 WIDTH = 800
 HEIGHT = 600
@@ -13,7 +17,7 @@ HEIGHT = 600
 class Opcion:
 
     def __init__(self, fuente, titulo, x, y, paridad, funcion_asignada):
-        self.imagen_normal = fuente.render(titulo, 1, (0, 0, 0))
+        self.imagen_normal = fuente.render(titulo, 1, (83, 108, 93))
         self.imagen_destacada = fuente.render(titulo, 1, (200, 255, 0))
         self.image = self.imagen_normal
         self.rect = self.image.get_rect()
@@ -23,7 +27,7 @@ class Opcion:
         self.x = float(self.rect.x)
 
     def actualizar(self):
-        destino_x = 370
+        destino_x = 710
         self.x += (destino_x - self.x) / 5.0
         self.rect.x = int(self.x)
 
@@ -67,9 +71,9 @@ class Menu:
     
     def __init__(self, opciones):
         self.opciones = []
-        fuente = pygame.font.Font('fonts/FEASFBI_.TTF', 30)
-        x = 370
-        y = 340
+        fuente = pygame.font.Font('fonts/FEASFBI_.TTF', 25)
+        x = 710
+        y = 10
         paridad = 1
 
         self.cursor = Cursor(x - 30, y, 33)
@@ -127,9 +131,9 @@ class Menu:
 class LookinGame:
  	"""docstring for Bird"""
  	def __init__(self):
- 		self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
- 		self.dead = False
-		self.background = self.load_image("images/background.png").convert()
+ 		pygame.init()
+ 		self.screen = pygame.display.set_mode((WIDTH, HEIGHT))		
+		self.background_image = self.load_image("images/background_initial.png").convert()
 		self.birdSprites = pyganim.PygAnimation([(self.load_image("images/birdtwo.png").convert_alpha(),200),
 							(self.load_image("images/birdthree.png").convert_alpha(),200),
 							(self.load_image("images/birdfour.png").convert_alpha(),200),
@@ -158,45 +162,56 @@ class LookinGame:
 		print " Gracias por utilizar este programa."
 		sys.exit(0)
  
+	def comenzar_nuevo_juego(self):
+		pygame.mixer.music.load("sounds/birdgame.mp3")
+		print " Función que muestra un nuevo juego."
+		clock = pygame.time.Clock()
+		pygame.mixer.music.play()
+		gameover = False
+		while not gameover == True:
+			for eventos in pygame.event.get():
+				if eventos.type == pygame.KEYDOWN:
+					if (eventos.key == pygame.K_o):
+						gameover = True
+						pygame.mixer.music.stop()
+						self.run()
+			self.screen.fill((255,255,255))
+			self.birdSprites.blit(self.screen, (350, 50))
+			pygame.display.update()
+	
+	def mostrar_opciones(self):
+		pass	    
+
+	def creditos(self):
+		print " Función que muestra los creditos del programa." 
+
 	def run(self):
 		salir = False
 		opciones = [
-			("Jugar", comenzar_nuevo_juego),
-			("Opciones", mostrar_opciones),
-			("Creditos", creditos),
+			("Jugar", self.comenzar_nuevo_juego),
+			("Opciones", self.mostrar_opciones),
 			("Salir", self.salir_del_programa)
         ]
 		pygame.init()
 		pygame.font.init()
 		clock = pygame.time.Clock()
-		pygame.mixer.music.load("sounds/intro.mp3")
-		pygame.mixer.music.play(20)
 		screen = pygame.display.set_mode((WIDTH, HEIGHT))
 		pygame.display.set_caption("Looking for my Son")
-		background_image = self.load_image('images/background_initial.png')
+		pygame.mixer.music.load("sounds/intro.mp3")
+		pygame.mixer.music.play(10)
 		menu = Menu(opciones)
 		while not salir:
 			clock.tick(60)
 			for eventos in pygame.event.get():
-				if eventos.type == QUIT:
+				if (eventos.type == QUIT):
 					sys.exit(0)
 					salir = True
-			screen.blit(background_image, (0, 0))
+			screen.blit(self.background_image, (0, 0))
 			menu.actualizar()
 			menu.imprimir(screen)
-			self.birdSprites.blit(screen, (100, 50))
 			pygame.display.flip()
 			pygame.time.delay(10)
 		return 0
-
-def comenzar_nuevo_juego():
-    print " Función que muestra un nuevo juego."
-
-def mostrar_opciones():
-    print " Función que muestra otro menú de opciones."
-
-def creditos():
-    print " Función que muestra los creditos del programa." 
 
 if __name__ == '__main__':
 	LookinGame().run()
